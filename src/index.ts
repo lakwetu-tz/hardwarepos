@@ -35,17 +35,17 @@ app.use('/api/users', tenantMiddleware, userRoutes);
 app.use('/api/logs', tenantMiddleware, logRoutes);
 
 app.get('*', (req, res) => {
-  const indexPath = res.sendFile(path.join(__dirname, '../public/index.html'));
+  const indexPath = path.join(__dirname, '../public/index.html');
 
   // Debug: log what path we're trying to send (visible in docker logs)
   console.log('SPA fallback: attempting to send →', indexPath);
   
-  res.sendFile(indexPath as any, (err) => {
+  res.sendFile(indexPath, err => {
     if (err) {
       console.error('sendFile failed:', err.message);
-      res.status(404).send('Not Found - index.html missing in container');
-    } else {
-      console.log('Successfully sent index.html');
+      if (!res.headersSent) {
+              res.status(404).send('Not Found - index.html missing');
+            }
     }
   });
 });

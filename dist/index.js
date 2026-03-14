@@ -33,7 +33,17 @@ app.use('/api/reports', tenant_1.tenantMiddleware, report_routes_1.default);
 app.use('/api/users', tenant_1.tenantMiddleware, user_routes_1.default);
 app.use('/api/logs', tenant_1.tenantMiddleware, log_routes_1.default);
 app.get('*', (req, res) => {
-    res.sendFile(path_1.default.join(__dirname, '../public/index.html'));
+    const indexPath = path_1.default.join(__dirname, '../public/index.html');
+    // Debug: log what path we're trying to send (visible in docker logs)
+    console.log('SPA fallback: attempting to send →', indexPath);
+    res.sendFile(indexPath, err => {
+        if (err) {
+            console.error('sendFile failed:', err.message);
+            if (!res.headersSent) {
+                res.status(404).send('Not Found - index.html missing');
+            }
+        }
+    });
 });
 // Catch-all 404
 app.use((req, res) => {
